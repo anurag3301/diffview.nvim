@@ -8,6 +8,7 @@ local M = {}
 ---@class FloatFrame : diffview.Object
 ---@field opt table
 ---@field backdrop_win integer?
+---@field saved_mouse string? The 'mouse' value to restore on close.
 ---@field augroup integer?
 ---@field panel_visible fun(): boolean Whether the file panel takes up space.
 ---@field relayout fun() Called when the geometry changed.
@@ -107,6 +108,11 @@ end
 function FloatFrame:open()
   if self:is_open() then return end
 
+  if self.opt.mouse then
+    self.saved_mouse = vim.o.mouse
+    vim.o.mouse = self.opt.mouse
+  end
+
   self.augroup = api.nvim_create_augroup("diffview_float_" .. tostring(vim.uv.hrtime()), {})
 
   api.nvim_create_autocmd("VimResized", {
@@ -157,6 +163,11 @@ function FloatFrame:close()
 
   if self.augroup then
     pcall(api.nvim_del_augroup_by_id, self.augroup)
+  end
+
+  if self.saved_mouse then
+    vim.o.mouse = self.saved_mouse
+    self.saved_mouse = nil
   end
 
   self.backdrop_win = nil

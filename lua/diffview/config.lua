@@ -81,6 +81,7 @@ M.defaults = {
       zindex = 50,
       backdrop = true,   -- Dim the editor behind the view
       backdrop_blend = 60,
+      mouse = "a",       -- 'mouse' value while the view is open (global option); false to leave it alone
     },
   },
   file_panel = {

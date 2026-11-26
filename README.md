@@ -236,6 +236,7 @@ require("diffview").setup({
       zindex = 50,
       backdrop = true,                  -- Dim the editor behind the view.
       backdrop_blend = 60,
+      mouse = "a",                      -- 'mouse' while the view is open (it is global); false to leave it alone.
     },
   },
   file_panel = {
