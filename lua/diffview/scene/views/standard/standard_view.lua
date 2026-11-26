@@ -45,11 +45,25 @@ end
 ---@override
 function StandardView:close()
   self.panel:destroy()
+
+  if self.frame then
+    for _, layout in pairs(self.layouts) do
+      for _, win in ipairs(layout.windows) do
+        win:close(true)
+      end
+    end
+  end
+
   View.close(self)
 end
 
 ---@override
 function StandardView:init_layout()
+  if self.frame then
+    self:init_float_layout()
+    return
+  end
+
   local first_init = not vim.t[self.tabpage].diffview_view_initialized
   local curwin = api.nvim_get_current_win()
 
@@ -63,6 +77,31 @@ function StandardView:init_layout()
 
   self.panel:focus()
   self.emitter:emit("post_layout")
+end
+
+---@private
+function StandardView:init_float_layout()
+  self.frame.panel_visible = function() return self.panel:is_open() end
+  self.frame.relayout = function() self:relayout_float() end
+
+  self.panel:open()
+
+  self:use_layout(StandardView.get_temp_layout())
+  self.cur_layout:create_float()
+
+  self.panel:focus()
+  self.emitter:emit("post_layout")
+end
+
+---Reposition the file panel and the diff windows of a floating view.
+function StandardView:relayout_float()
+  if not self.frame or not self.cur_layout then return end
+
+  if self.panel:is_open() then
+    api.nvim_win_set_config(self.panel.winid, utils.sanitize_float_config(self.panel:get_config()))
+  end
+
+  self.cur_layout:relayout_float()
 end
 
 function StandardView:post_layout()
@@ -97,6 +136,7 @@ end
 ---@param layout Layout
 function StandardView:use_layout(layout)
   self.cur_layout = layout:clone()
+  self.cur_layout.frame = self.frame
   self.layouts[layout.class] = self.cur_layout
 
   self.cur_layout.pivot_producer = function()
@@ -161,7 +201,7 @@ StandardView.use_entry = async.void(function(self, entry)
     end
 
     await(self.cur_layout:use_entry(entry))
-    local future = self.cur_layout:create()
+    local future = self.frame and self.cur_layout:create_float() or self.cur_layout:create()
     old_layout:destroy()
 
     -- Wait for files to be created + opened

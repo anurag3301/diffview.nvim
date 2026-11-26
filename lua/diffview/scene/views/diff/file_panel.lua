@@ -67,9 +67,37 @@ function FilePanel:init(adapter, files, path_args, rev_pretty_name)
 end
 
 ---@override
+function FilePanel:get_config()
+  if self.frame then
+    return vim.tbl_deep_extend(
+      "force",
+      Panel.default_config_float,
+      self.frame:panel_config(),
+      { win_opts = utils.tbl_access(self.config_producer, "win_opts") or {} }
+    )
+  end
+
+  return FilePanel.super_class.get_config(self)
+end
+
+---@override
 function FilePanel:open()
   FilePanel.super_class.open(self)
-  vim.cmd("wincmd =")
+
+  if self.frame then
+    self.frame.relayout()
+  else
+    vim.cmd("wincmd =")
+  end
+end
+
+---@override
+function FilePanel:close()
+  FilePanel.super_class.close(self)
+
+  if self.frame then
+    self.frame.relayout()
+  end
 end
 
 function FilePanel:setup_buffer()

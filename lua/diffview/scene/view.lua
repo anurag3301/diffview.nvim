@@ -28,6 +28,7 @@ local LayoutMode = oop.enum({
 ---@field default_layout Layout (class)
 ---@field ready boolean
 ---@field closing Signal
+---@field frame FloatFrame? Set when the view is drawn in floating windows.
 local View = oop.create_class("View")
 
 ---@diagnostic disable unused-local
@@ -62,7 +63,12 @@ function View:init(opt)
 end
 
 function View:open()
-  vim.cmd("tab split")
+  if self.frame then
+    self.frame:open()
+  else
+    vim.cmd("tab split")
+  end
+
   self.tabpage = api.nvim_get_current_tabpage()
   self:init_layout()
   self:post_open()
@@ -76,12 +82,16 @@ function View:close()
   if self.tabpage and api.nvim_tabpage_is_valid(self.tabpage) then
     DiffviewGlobal.emitter:emit("view_leave", self)
 
-    if #api.nvim_list_tabpages() == 1 then
-      vim.cmd("tabnew")
-    end
+    if self.frame then
+      self.frame:close()
+    else
+      if #api.nvim_list_tabpages() == 1 then
+        vim.cmd("tabnew")
+      end
 
-    local pagenr = api.nvim_tabpage_get_number(self.tabpage)
-    vim.cmd("tabclose " .. pagenr)
+      local pagenr = api.nvim_tabpage_get_number(self.tabpage)
+      vim.cmd("tabclose " .. pagenr)
+    end
   end
 
   DiffviewGlobal.emitter:emit("view_closed", self)

@@ -74,6 +74,13 @@ function DiffView:init(opt)
     ),
   })
 
+  local float_conf = config.get_config().view.float
+
+  if float_conf.enabled then
+    self.frame = require("diffview.scene.float").FloatFrame(float_conf)
+    self.panel.frame = self.frame
+  end
+
   self.attached_bufs = {}
   self.emitter:on("file_open_post", utils.bind(self.file_open_post, self))
   self.valid = true

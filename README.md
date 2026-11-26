@@ -227,6 +227,16 @@ require("diffview").setup({
       disable_diagnostics = false,  -- Temporarily disable diagnostics for diff buffers while in the view.
       winbar_info = false,          -- See |diffview-config-view.x.winbar_info|
     },
+    float = {                           -- Show `:DiffviewOpen` in floating windows instead of a new tabpage.
+      enabled = false,                  -- `q` closes the view unless `q` is mapped otherwise.
+      width = 0.9,                      -- Fraction of the editor (<= 1) or absolute columns.
+      height = 0.85,                    -- Fraction of the editor (<= 1) or absolute lines.
+      panel_width = 35,                 -- Width of the file panel (without border).
+      border = "rounded",
+      zindex = 50,
+      backdrop = true,                  -- Dim the editor behind the view.
+      backdrop_blend = 60,
+    },
   },
   file_panel = {
     listing_style = "tree",             -- One of 'list' or 'tree'

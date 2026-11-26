@@ -69,6 +69,19 @@ M.defaults = {
       disable_diagnostics = false,
       winbar_info = false,
     },
+    -- Show `:DiffviewOpen` in floating windows over the current tabpage
+    -- instead of a new tabpage. `q` is mapped to close the view (unless
+    -- another mapping for `q` is configured).
+    float = {
+      enabled = false,
+      width = 0.9,       -- Fraction of the editor (<= 1) or absolute columns
+      height = 0.85,     -- Fraction of the editor (<= 1) or absolute lines
+      panel_width = 35,  -- Width of the file panel (without border)
+      border = "rounded",
+      zindex = 50,
+      backdrop = true,   -- Dim the editor behind the view
+      backdrop_blend = 60,
+    },
   },
   file_panel = {
     listing_style = "tree",
@@ -644,6 +657,24 @@ function M.setup(user_config)
         keymap,
         utils.tbl_access(user_config, { "keymaps", name }) or {}
       )
+    end
+  end
+
+  if M._config.view.float.enabled then
+    for _, name in ipairs({ "view", "file_panel" }) do
+      local keymaps = M._config.keymaps[name]
+
+      if type(keymaps) == "table" then
+        local has_q = false
+
+        for _, mapping in ipairs(keymaps) do
+          if mapping[2] == "q" then has_q = true end
+        end
+
+        if not has_q then
+          table.insert(keymaps, { "n", "q", "<Cmd>DiffviewClose<CR>", { desc = "Close Diffview" } })
+        end
+      end
     end
   end
 

@@ -16,6 +16,7 @@ local M = {}
 ---@field pivot_producer fun(): integer?
 ---@field name string
 ---@field state table
+---@field frame FloatFrame? Set when the layout is drawn in floating windows.
 local Layout = oop.create_class("Layout")
 
 function Layout:init(opt)
@@ -58,6 +59,7 @@ end
 
 function Layout:clone()
   local clone = self.class({ emitter = self.emitter }) --[[@as Layout ]]
+  clone.frame = self.frame
 
   for i, win in ipairs(self.windows) do
     clone.windows[i]:set_id(win.id)
@@ -77,6 +79,38 @@ Layout.create_post = async.void(function(self)
   await(self:open_files())
   vim.opt.equalalways = self.state.save_equalalways
 end)
+
+---Create the layout as a row of floating windows, one per layout window.
+---@param self Layout
+Layout.create_float = async.void(function(self)
+  assert(self.frame, "Floating layout creation requires a frame!")
+  self:create_pre()
+
+  for _, win in ipairs(self.windows) do
+    win:close(true)
+  end
+
+  local configs = self.frame:window_configs(#self.windows)
+
+  for i, win in ipairs(self.windows) do
+    local bufnr = api.nvim_create_buf(false, true)
+    vim.bo[bufnr].bufhidden = "wipe"
+    win:set_id(api.nvim_open_win(bufnr, false, configs[i]))
+  end
+
+  await(self:create_post())
+end)
+
+---Reposition the floating windows after the frame geometry changed.
+function Layout:relayout_float()
+  local configs = self.frame:window_configs(#self.windows)
+
+  for i, win in ipairs(self.windows) do
+    if win:is_valid() then
+      api.nvim_win_set_config(win.id, configs[i])
+    end
+  end
+end
 
 ---Check if any of the windows in the lauout are focused.
 ---@return boolean
@@ -197,6 +231,11 @@ end
 ---Recover a broken layout.
 ---@param pivot? integer
 function Layout:recover(pivot)
+  if self.frame then
+    self:create_float()
+    return
+  end
+
   pivot = pivot or self:find_pivot()
   ---@cast pivot -?
 
