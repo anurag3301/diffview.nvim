@@ -74,7 +74,7 @@ M.defaults = {
     -- another mapping for `q` is configured).
     float = {
       enabled = false,
-      width = 0.9,       -- Fraction of the editor (<= 1) or absolute columns
+      width = 1,         -- Fraction of the editor (<= 1) or absolute columns
       height = 0.85,     -- Fraction of the editor (<= 1) or absolute lines
       panel_width = 35,  -- Width of the file panel (without border)
       border = "rounded",

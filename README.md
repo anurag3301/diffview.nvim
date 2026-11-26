@@ -229,7 +229,7 @@ require("diffview").setup({
     },
     float = {                           -- Show `:DiffviewOpen` in floating windows instead of a new tabpage.
       enabled = false,                  -- `q` closes the view unless `q` is mapped otherwise.
-      width = 0.9,                      -- Fraction of the editor (<= 1) or absolute columns.
+      width = 1,                        -- Fraction of the editor (<= 1) or absolute columns.
       height = 0.85,                    -- Fraction of the editor (<= 1) or absolute lines.
       panel_width = 35,                 -- Width of the file panel (without border).
       border = "rounded",

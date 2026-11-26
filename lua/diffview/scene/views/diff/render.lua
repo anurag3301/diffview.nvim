@@ -14,7 +14,7 @@ local function render_file(comp, show_path, depth)
   comp:add_text(file.status .. " ", hl.get_git_hl(file.status))
 
   if depth then
-    comp:add_text(string.rep(" ", depth * 2 + 2))
+    comp:add_text(string.rep(" ", depth * 2))
   end
 
   local icon, icon_hl = hl.get_file_icon(file.basename, file.extension)
